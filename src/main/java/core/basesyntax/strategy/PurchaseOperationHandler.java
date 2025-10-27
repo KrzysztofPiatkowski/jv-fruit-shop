@@ -1,16 +1,20 @@
 package core.basesyntax.strategy;
 
 import core.basesyntax.model.FruitTransaction;
-import core.basesyntax.storage.FruitStorage;
+import java.util.Map;
 
 public class PurchaseOperationHandler implements OperationHandler {
     @Override
-    public void apply(FruitTransaction transaction) {
+    public void apply(FruitTransaction transaction, Map<String, Integer> storage) {
         String fruit = transaction.getFruit();
         int quantity = transaction.getQuantity();
+        int current = storage.getOrDefault(fruit, 0);
+        int result = current - quantity;
 
-        int currentQuantity = FruitStorage.storage.getOrDefault(fruit, 0);
+        if (result < 0) {
+            throw new RuntimeException("Insufficient stock for " + fruit);
+        }
 
-        FruitStorage.storage.put(fruit, currentQuantity - quantity);
+        storage.put(fruit, result);
     }
 }

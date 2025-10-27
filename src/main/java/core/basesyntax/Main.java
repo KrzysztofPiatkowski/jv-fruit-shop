@@ -41,10 +41,10 @@ public class Main {
         ShopService shopService = new ShopServiceImpl(strategy);
 
         List<FruitTransaction> transactions = dataConverter.convertToTransaction(lines);
-        shopService.process(transactions);
+        Map<String, Integer> storage = shopService.process(transactions);
 
         ReportGenerator reportGenerator = new ReportGeneratorImpl();
-        String report = reportGenerator.getReport();
+        String report = reportGenerator.getReport(storage);
 
         FileWriter fileWriter = new FileWriterImpl();
         fileWriter.write(report, "finalReport.csv");

@@ -8,27 +8,57 @@ public class DataConverterImpl implements DataConverter {
 
     @Override
     public List<FruitTransaction> convertToTransaction(List<String> lines) {
+        if (lines == null) {
+            throw new IllegalArgumentException("Input lines list cannot be null");
+        }
+
         List<FruitTransaction> transactions = new ArrayList<>();
+
+        if (lines.size() <= 1) {
+            throw new IllegalArgumentException("Input file is empty or contains only header");
+        }
 
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
+
+            if (line == null || line.trim().isEmpty()) {
+                throw new IllegalArgumentException("Line " + i + " is empty");
+            }
+
             String[] parts = line.split(",");
 
             if (parts.length != 3) {
-                throw new IllegalArgumentException("Line: " + line + " of this file is invalid");
+                throw new IllegalArgumentException("Invalid CSV format at line: " + line);
             }
 
             String operationType = parts[0].trim();
             String fruit = parts[1].trim();
-            int quantity = Integer.parseInt(parts[2].trim());
+            String quantityString = parts[2].trim();
 
-            FruitTransaction.Operation operation = FruitTransaction
-                    .Operation
-                    .fromCode(operationType);
+            if (operationType.isEmpty() || fruit.isEmpty() || quantityString.isEmpty()) {
+                throw new IllegalArgumentException("Missing data at line: " + line);
+            }
 
-            FruitTransaction transaction = new FruitTransaction(operation, fruit, quantity);
+            int quantity;
+            try {
+                quantity = Integer.parseInt(quantityString);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid number at line: " + line, e);
+            }
+
+            if (quantity < 0) {
+                throw new IllegalArgumentException("Quantity cannot be negative at line: " + line);
+            }
+
+            FruitTransaction.Operation operation =
+                    FruitTransaction.Operation.fromCode(operationType);
+
+            FruitTransaction transaction =
+                    new FruitTransaction(operation, fruit, quantity);
             transactions.add(transaction);
         }
+
         return transactions;
     }
+
 }
